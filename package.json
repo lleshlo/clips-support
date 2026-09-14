@@ -1,0 +1,47 @@
+{
+  "name": "clips-support",
+  "displayName": "CLIPS Language Support",
+  "description": "Syntax highlighting and basic linting for NASA's CLIPS rule-based language",
+  "version": "0.1.0",
+  "publisher": "clips-support",
+  "engines": {
+    "vscode": "^1.85.0"
+  },
+  "categories": [
+    "Programming Languages",
+    "Linters"
+  ],
+  "activationEvents": [
+    "onLanguage:clips"
+  ],
+  "main": "./src/extension.js",
+  "contributes": {
+    "languages": [
+      {
+        "id": "clips",
+        "aliases": [
+          "CLIPS",
+          "clips"
+        ],
+        "extensions": [
+          ".clp",
+          ".clips"
+        ],
+        "configuration": "./language-configuration.json"
+      }
+    ],
+    "grammars": [
+      {
+        "language": "clips",
+        "scopeName": "source.clips",
+        "path": "./syntaxes/clips.tmLanguage.json"
+      }
+    ]
+  },
+  "scripts": {
+    "test": "node ./test/runTest.js"
+  },
+  "devDependencies": {
+    "@types/vscode": "^1.85.0"
+  }
+}
