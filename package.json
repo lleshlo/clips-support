@@ -5,6 +5,10 @@
   "version": "0.1.2",
   "publisher": "clips-support",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/lleshlo/clips-support.git"
+  },
   "engines": {
     "vscode": "^1.85.0"
   },
