@@ -14,7 +14,8 @@
     { "include": "#keywords" },
     { "include": "#slot-keywords" },
     { "include": "#constants" },
-    { "include": "#operators" }
+    { "include": "#operators" },
+    { "include": "#symbols" }
   ],
   "repository": {
     "comments": {
@@ -48,7 +49,31 @@
     "constructs": {
       "patterns": [
         {
-          "match": "(\\()\\s*(deffacts|deftemplate|defrule|deffunction|defglobal|defclass|definstances|defmessage-handler|defmodule|defgeneric|defmethod)\\b",
+          "match": "(\\()\\s*(defrule)\\s+([^\\s()]+)",
+          "captures": {
+            "1": { "name": "punctuation.section.parens.begin.clips" },
+            "2": { "name": "keyword.control.construct.clips" },
+            "3": { "name": "entity.name.function.rule.clips" }
+          }
+        },
+        {
+          "match": "(\\()\\s*(deftemplate)\\s+([^\\s()]+)",
+          "captures": {
+            "1": { "name": "punctuation.section.parens.begin.clips" },
+            "2": { "name": "keyword.control.construct.clips" },
+            "3": { "name": "entity.name.type.template.clips" }
+          }
+        },
+        {
+          "match": "(\\()\\s*(deffunction)\\s+([^\\s()]+)",
+          "captures": {
+            "1": { "name": "punctuation.section.parens.begin.clips" },
+            "2": { "name": "keyword.control.construct.clips" },
+            "3": { "name": "entity.name.function.clips" }
+          }
+        },
+        {
+          "match": "(\\()\\s*(deffacts|defglobal|defclass|definstances|defmessage-handler|defmodule|defgeneric|defmethod)\\b",
           "captures": {
             "1": { "name": "punctuation.section.parens.begin.clips" },
             "2": { "name": "keyword.control.construct.clips" }
@@ -115,6 +140,10 @@
           "match": "[&|~]"
         }
       ]
+    },
+    "symbols": {
+      "name": "constant.other.symbol.clips",
+      "match": "[^\\s();\"?$]+"
     }
   }
 }

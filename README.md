@@ -4,18 +4,21 @@ Syntax highlighting and basic linting for [CLIPS](https://www.clipsrules.net/), 
 
 ## Features
 
-- **Syntax highlighting** for `.clp` and `.clips` files: constructs (`defrule`, `deftemplate`, `deffacts`, `deffunction`, `defglobal`, `defclass`, `defmodule`, etc.), variables (`?x`, `$?x`, `?*global*`), strings, numbers, comments (`;` and `/* */`), slot keywords, and common built-in functions.
+- **Syntax highlighting** for `.clp` and `.clips` files: constructs (`defrule`, `deftemplate`, `deffacts`, `deffunction`, `defglobal`, `defclass`, `defmodule`, etc.) plus their names (rule names, template names, function names), variables (`?x`, `$?x`, `?*global*`), strings, numbers, comments (`;` and `/* */`), slot keywords, symbols, and common built-in functions.
+- **Semantic highlighting for resolved template usages**: a symbol used as a fact/pattern head (e.g. `person` in `(person (name ?n))`) is colored distinctly once it resolves against a known `deftemplate` — including one defined in a different file — so you can visually tell a real template reference from an arbitrary symbol.
 - **Basic linting**, updated live as you type:
   - Unmatched/unbalanced parentheses
   - Unterminated string literals
   - Constructs missing a name (e.g. `(deftemplate)` with no name)
   - `defrule` blocks missing the `=>` separator between patterns and actions
+  - A symbol value used for a slot with an `allowed-symbols` facet that isn't in that facet's list — resolved across files, so this also catches misuse of a template defined elsewhere (see `test-fixtures/templates.clp` + `test-fixtures/usage.clp`)
 - **Template IntelliSense**: `deftemplate` definitions are indexed across every `.clp`/`.clips` file in the workspace (not just the current file), so:
   - Typing a pattern's head (e.g. `(pe|` inside a rule) offers known template names as completions, with a hover-style preview of their slots.
   - Once inside a known template's pattern (e.g. `(person |`), completion offers that template's slot names, each inserted as a ready-to-fill `(slotname )` snippet.
   - Typing a slot name directly (e.g. `(person (na|`) completes to the slot name itself.
   - Each slot completion's detail/documentation shows its facets (`type`, `default`, `allowed-values`, `cardinality`, etc.).
   - Hovering over a template name anywhere shows its full slot list and facets.
+  - Ctrl/Cmd-click (or F12 "Go to Definition") on a template name usage jumps to its `deftemplate` definition, even in another file.
   - See `test-fixtures/templates.clp` + `test-fixtures/usage.clp` for a worked example of resolving a template defined in one file from a rule in another.
 
   If a template library lives outside the workspace, or in a directory excluded from the normal file search, set `clips.includePath` (a workspace setting) to that directory — see `test-fixtures/external-templates/` for an example. This is additive: the workspace's own `.clp`/`.clips` files are always scanned regardless of this setting.
@@ -52,11 +55,13 @@ This extension is not yet published to the Marketplace. Install it manually:
 - `src/extension.js` — extension entry point; wires the linter and template index to document events.
 - `src/tokenizer.js` — shared CLIPS tokenizer (comments/strings/parens/symbols), no vscode dependency.
 - `src/sexpr.js` — generic s-expression tree builder over the token stream.
-- `src/linter.js` — diagnostic checks (balanced parens, `defrule` missing `=>`, etc.).
+- `src/linter.js` — syntax-only diagnostic checks (balanced parens, `defrule` missing `=>`, etc.); no template index dependency.
 - `src/templateParser.js` — extracts `deftemplate` name/slots/facets from source text; no vscode dependency.
-- `src/templateIndex.js` — scans the workspace (and `clips.includePath`) for templates and keeps the index current via file watchers.
+- `src/templateIndex.js` — scans the workspace (and `clips.includePath`) for templates and keeps the index current via file watchers; fires `onDidChange` so other open files can react when a template defined elsewhere changes.
 - `src/patternContext.js` — figures out, from cursor position, whether completion should offer template names or a specific template's slot names.
-- `src/completion.js` / `src/hover.js` — the IntelliSense providers built on top of the index.
+- `src/semanticAnalysis.js` — walks a document's s-expression tree to find resolved template usages and check slot values against `allowed-symbols`; no vscode dependency.
+- `src/completion.js` / `src/hover.js` / `src/definition.js` / `src/semanticTokens.js` — the IntelliSense providers built on top of the index and `semanticAnalysis.js`.
+- `src/templateLint.js` — turns `semanticAnalysis.js`'s `allowed-symbols` violations into diagnostics.
 - `test-fixtures/` — sample `.clp` files used for manual testing.
 
 ## CI/CD
@@ -76,11 +81,12 @@ Two GitHub Actions workflows handle packaging and releases:
 
 ## Roadmap (beyond MVP)
 
-- Richer semantic linting (undefined templates/facts referenced in rules, duplicate rule names, deftemplate slot validation).
+- Richer semantic linting (undefined templates/facts referenced in rules, duplicate rule names, `allowed-values`/`allowed-strings`/`allowed-numbers` checks beyond just `allowed-symbols`, deftemplate slot validation).
 - Slot completion that excludes slots already present in the current pattern instance.
 - Code completion for CLIPS keywords and built-in functions.
 - Hover documentation for built-in functions.
-- Go-to-definition for rules, templates, and functions.
+- Go-to-definition for `deffunction`s and rule cross-references (currently templates only).
+- `defrule`/`deftemplate`/`deffunction` name highlighting requires the name to be on the same line as the keyword (standard CLIPS style); a name on its own line falls back to generic symbol coloring.
 
 ## License
 
