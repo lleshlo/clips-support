@@ -10,6 +10,15 @@ Syntax highlighting and basic linting for [CLIPS](https://www.clipsrules.net/), 
   - Unterminated string literals
   - Constructs missing a name (e.g. `(deftemplate)` with no name)
   - `defrule` blocks missing the `=>` separator between patterns and actions
+- **Template IntelliSense**: `deftemplate` definitions are indexed across every `.clp`/`.clips` file in the workspace (not just the current file), so:
+  - Typing a pattern's head (e.g. `(pe|` inside a rule) offers known template names as completions, with a hover-style preview of their slots.
+  - Once inside a known template's pattern (e.g. `(person |`), completion offers that template's slot names, each inserted as a ready-to-fill `(slotname )` snippet.
+  - Typing a slot name directly (e.g. `(person (na|`) completes to the slot name itself.
+  - Each slot completion's detail/documentation shows its facets (`type`, `default`, `allowed-values`, `cardinality`, etc.).
+  - Hovering over a template name anywhere shows its full slot list and facets.
+  - See `test-fixtures/templates.clp` + `test-fixtures/usage.clp` for a worked example of resolving a template defined in one file from a rule in another.
+
+  If a template library lives outside the workspace, or in a directory excluded from the normal file search, set `clips.includePath` (a workspace setting) to that directory — see `test-fixtures/external-templates/` for an example. This is additive: the workspace's own `.clp`/`.clips` files are always scanned regardless of this setting.
 
 ## Installing (manual / MVP)
 
@@ -40,8 +49,14 @@ This extension is not yet published to the Marketplace. Install it manually:
 
 - `syntaxes/clips.tmLanguage.json` — TextMate grammar for syntax highlighting.
 - `language-configuration.json` — comment styles, bracket matching, auto-closing pairs.
-- `src/extension.js` — extension entry point; wires the linter to document events.
-- `src/linter.js` — tokenizer and diagnostic checks.
+- `src/extension.js` — extension entry point; wires the linter and template index to document events.
+- `src/tokenizer.js` — shared CLIPS tokenizer (comments/strings/parens/symbols), no vscode dependency.
+- `src/sexpr.js` — generic s-expression tree builder over the token stream.
+- `src/linter.js` — diagnostic checks (balanced parens, `defrule` missing `=>`, etc.).
+- `src/templateParser.js` — extracts `deftemplate` name/slots/facets from source text; no vscode dependency.
+- `src/templateIndex.js` — scans the workspace (and `clips.includePath`) for templates and keeps the index current via file watchers.
+- `src/patternContext.js` — figures out, from cursor position, whether completion should offer template names or a specific template's slot names.
+- `src/completion.js` / `src/hover.js` — the IntelliSense providers built on top of the index.
 - `test-fixtures/` — sample `.clp` files used for manual testing.
 
 ## CI/CD
@@ -62,6 +77,7 @@ Two GitHub Actions workflows handle packaging and releases:
 ## Roadmap (beyond MVP)
 
 - Richer semantic linting (undefined templates/facts referenced in rules, duplicate rule names, deftemplate slot validation).
+- Slot completion that excludes slots already present in the current pattern instance.
 - Code completion for CLIPS keywords and built-in functions.
 - Hover documentation for built-in functions.
 - Go-to-definition for rules, templates, and functions.

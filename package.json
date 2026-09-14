@@ -5,6 +5,10 @@
   "version": "0.1.2",
   "publisher": "clips-support",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/lleshlo/clips-support.git"
+  },
   "engines": {
     "vscode": "^1.85.0"
   },
@@ -37,7 +41,17 @@
         "scopeName": "source.clips",
         "path": "./syntaxes/clips.tmLanguage.json"
       }
-    ]
+    ],
+    "configuration": {
+      "title": "CLIPS",
+      "properties": {
+        "clips.includePath": {
+          "type": "string",
+          "default": "",
+          "description": "Directory (absolute, or relative to the workspace root) to additionally scan for deftemplate definitions, for templates that live outside the workspace or are excluded from the normal file search. The workspace's own .clp/.clips files are always scanned regardless of this setting."
+        }
+      }
+    }
   },
   "scripts": {
     "test": "node ./test/runTest.js"
