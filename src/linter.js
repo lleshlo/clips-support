@@ -1,4 +1,5 @@
 const vscode = require('vscode');
+const { tokenize } = require('./tokenizer');
 
 const CONSTRUCT_KEYWORDS = new Set([
   'deffacts',
@@ -13,90 +14,6 @@ const CONSTRUCT_KEYWORDS = new Set([
   'defgeneric',
   'defmethod'
 ]);
-
-// Walks the document text once, skipping comments and strings, and yields
-// a stream of tokens: parens with positions, and bare symbol tokens.
-function tokenize(text) {
-  const tokens = [];
-  let i = 0;
-  const len = text.length;
-  let line = 0;
-  let col = 0;
-
-  function advance() {
-    if (text[i] === '\n') {
-      line++;
-      col = 0;
-    } else {
-      col++;
-    }
-    i++;
-  }
-
-  while (i < len) {
-    const ch = text[i];
-
-    if (ch === ';') {
-      while (i < len && text[i] !== '\n') {
-        advance();
-      }
-      continue;
-    }
-
-    if (ch === '/' && text[i + 1] === '*') {
-      advance();
-      advance();
-      while (i < len && !(text[i] === '*' && text[i + 1] === '/')) {
-        advance();
-      }
-      if (i < len) {
-        advance();
-        advance();
-      }
-      continue;
-    }
-
-    if (ch === '"') {
-      const startLine = line;
-      const startCol = col;
-      advance();
-      while (i < len && text[i] !== '"') {
-        if (text[i] === '\\') {
-          advance();
-        }
-        advance();
-      }
-      if (i < len) {
-        advance();
-      } else {
-        tokens.push({ type: 'unterminated-string', line: startLine, col: startCol });
-      }
-      continue;
-    }
-
-    if (ch === '(' || ch === ')') {
-      tokens.push({ type: ch, line, col });
-      advance();
-      continue;
-    }
-
-    if (/\s/.test(ch)) {
-      advance();
-      continue;
-    }
-
-    const startLine = line;
-    const startCol = col;
-    let symbol = '';
-    while (i < len && !/[\s()]/.test(text[i]) && text[i] !== ';') {
-      symbol += text[i];
-      advance();
-    }
-    tokens.push({ type: 'symbol', value: symbol, line: startLine, col: startCol });
-  }
-
-  return tokens;
-}
 
 function checkBalancedParens(tokens, diagnostics) {
   const stack = [];
