@@ -2,7 +2,7 @@
   "name": "clips-support",
   "displayName": "CLIPS Language Support",
   "description": "Syntax highlighting and basic linting for NASA's CLIPS rule-based language",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "publisher": "clips-support",
   "engines": {
     "vscode": "^1.85.0"
