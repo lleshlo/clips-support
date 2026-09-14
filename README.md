@@ -44,6 +44,21 @@ This extension is not yet published to the Marketplace. Install it manually:
 - `src/linter.js` — tokenizer and diagnostic checks.
 - `test-fixtures/` — sample `.clp` files used for manual testing.
 
+## CI/CD
+
+Two GitHub Actions workflows handle packaging and releases:
+
+- **`.github/workflows/build.yml`** — runs on every pull request and on pushes to any branch other than `main`. Packages the extension with `vsce package` and uploads the resulting `.vsix` as a build artifact, so you can download and sanity-check a build from any branch or PR without publishing anything.
+- **`.github/workflows/release.yml`** — runs on every push to `main` (i.e. whenever a branch is merged). It:
+  1. Bumps the patch version in `package.json` (`npm version patch`) and commits the change back to `main`.
+  2. Pushes the corresponding `vX.Y.Z` git tag.
+  3. Packages the extension into a versioned `.vsix`.
+  4. Creates a GitHub Release for that tag with the `.vsix` attached.
+
+  The version-bump commit is tagged with a `chore(release):` message, which the workflow itself skips, so it doesn't trigger an infinite release loop.
+
+  Note: if `main` has branch protection requiring PRs/reviews, the workflow's push of the version-bump commit will be rejected unless the default `GITHUB_TOKEN` (or a configured PAT) is allowed to bypass those rules.
+
 ## Roadmap (beyond MVP)
 
 - Richer semantic linting (undefined templates/facts referenced in rules, duplicate rule names, deftemplate slot validation).

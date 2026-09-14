@@ -1,0 +1,59 @@
+name: Release
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: release
+  cancel-in-progress: false
+
+jobs:
+  release:
+    # Skip the run this workflow's own version-bump commit produces,
+    # otherwise every release commit would trigger another release.
+    if: "!contains(github.event.head_commit.message, 'chore(release):')"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Configure git identity
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Install vsce
+        run: npm install -g @vscode/vsce
+
+      - name: Bump version and tag
+        id: bump
+        run: |
+          npm version patch -m "chore(release): v%s"
+          echo "version=$(node -p "require('./package.json').version")" >> "$GITHUB_OUTPUT"
+
+      - name: Push version bump and tag
+        run: |
+          git push origin HEAD:main
+          git push origin "v${{ steps.bump.outputs.version }}"
+
+      - name: Package extension
+        run: vsce package -o "clips-support-${{ steps.bump.outputs.version }}.vsix"
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: "v${{ steps.bump.outputs.version }}"
+          name: "v${{ steps.bump.outputs.version }}"
+          files: "clips-support-${{ steps.bump.outputs.version }}.vsix"
+          generate_release_notes: true
