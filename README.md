@@ -65,3 +65,7 @@ Two GitHub Actions workflows handle packaging and releases:
 - Code completion for CLIPS keywords and built-in functions.
 - Hover documentation for built-in functions.
 - Go-to-definition for rules, templates, and functions.
+
+## License
+
+[MIT](./LICENSE)
