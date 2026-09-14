@@ -1,7 +1,6 @@
 const vscode = require('vscode');
 const { templateMarkdown } = require('./templateDocs');
-
-const WORD_PATTERN = /[A-Za-z0-9_+\-*/.<>=]+/;
+const { WORD_PATTERN } = require('./clipsWords');
 
 function registerHoverProvider(context, index) {
   const provider = {

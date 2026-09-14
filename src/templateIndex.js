@@ -15,13 +15,19 @@ class TemplateIndex {
     this.filesTemplates = new Map();
     this.disposables = [];
     this.includeWatcher = null;
+    this.emitter = new vscode.EventEmitter();
+    // Fires whenever any file's templates change, so providers that depend
+    // on templates defined elsewhere (semantic tokens, cross-file
+    // diagnostics) know to recompute even when the currently open document
+    // itself hasn't changed.
+    this.onDidChange = this.emitter.event;
   }
 
   activate(context) {
     const workspaceWatcher = vscode.workspace.createFileSystemWatcher(FILE_GLOB);
     workspaceWatcher.onDidChange((uri) => this.indexFileUri(uri));
     workspaceWatcher.onDidCreate((uri) => this.indexFileUri(uri));
-    workspaceWatcher.onDidDelete((uri) => this.filesTemplates.delete(uri.toString()));
+    workspaceWatcher.onDidDelete((uri) => this.deleteFile(uri));
     this.disposables.push(workspaceWatcher);
 
     this.disposables.push(
@@ -45,6 +51,7 @@ class TemplateIndex {
     if (this.includeWatcher) {
       this.includeWatcher.dispose();
     }
+    this.emitter.dispose();
   }
 
   async refreshAll() {
@@ -93,7 +100,7 @@ class TemplateIndex {
     this.includeWatcher = vscode.workspace.createFileSystemWatcher(pattern);
     this.includeWatcher.onDidChange((uri) => this.indexFileUri(uri));
     this.includeWatcher.onDidCreate((uri) => this.indexFileUri(uri));
-    this.includeWatcher.onDidDelete((uri) => this.filesTemplates.delete(uri.toString()));
+    this.includeWatcher.onDidDelete((uri) => this.deleteFile(uri));
   }
 
   resolveIncludePath(includePath) {
@@ -128,10 +135,17 @@ class TemplateIndex {
   indexText(uri, text) {
     const templates = extractTemplates(text).map((t) => ({ ...t, sourceUri: uri }));
     this.filesTemplates.set(uri.toString(), templates);
+    this.emitter.fire();
   }
 
   removeDocument(document) {
-    this.filesTemplates.delete(document.uri.toString());
+    this.deleteFile(document.uri);
+  }
+
+  deleteFile(uri) {
+    if (this.filesTemplates.delete(uri.toString())) {
+      this.emitter.fire();
+    }
   }
 
   // Later-indexed files win on name collisions; good enough for an MVP

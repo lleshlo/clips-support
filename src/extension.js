@@ -1,8 +1,11 @@
 const vscode = require('vscode');
 const { lintDocument } = require('./linter');
+const { lintTemplateUsage } = require('./templateLint');
 const { TemplateIndex } = require('./templateIndex');
 const { registerCompletionProvider } = require('./completion');
 const { registerHoverProvider } = require('./hover');
+const { registerDefinitionProvider } = require('./definition');
+const { registerSemanticTokensProvider } = require('./semanticTokens');
 
 function activate(context) {
   const diagnostics = vscode.languages.createDiagnosticCollection('clips');
@@ -11,8 +14,14 @@ function activate(context) {
   const templateIndex = new TemplateIndex();
   registerCompletionProvider(context, templateIndex);
   registerHoverProvider(context, templateIndex);
+  registerDefinitionProvider(context, templateIndex);
+  registerSemanticTokensProvider(context, templateIndex);
 
   const timers = new Map();
+
+  function updateDiagnostics(document) {
+    diagnostics.set(document.uri, [...lintDocument(document), ...lintTemplateUsage(document, templateIndex)]);
+  }
 
   function scheduleUpdate(document) {
     if (document.languageId !== 'clips') {
@@ -25,7 +34,9 @@ function activate(context) {
     }
     const timer = setTimeout(() => {
       timers.delete(key);
-      diagnostics.set(document.uri, lintDocument(document));
+      // indexDocument fires templateIndex.onDidChange synchronously, which
+      // re-lints every open clips document (this one included) against the
+      // freshly updated index — no separate updateDiagnostics call needed.
       templateIndex.indexDocument(document);
     }, 300);
     timers.set(key, timer);
@@ -50,6 +61,16 @@ function activate(context) {
       if (document.uri.scheme === 'untitled') {
         templateIndex.removeDocument(document);
       }
+    }),
+    // A template's allowed-symbols facet can change in a file other than
+    // the one currently open, so re-check every open document's usages
+    // whenever the index changes anywhere.
+    templateIndex.onDidChange(() => {
+      vscode.workspace.textDocuments.forEach((document) => {
+        if (document.languageId === 'clips') {
+          updateDiagnostics(document);
+        }
+      });
     })
   );
 
