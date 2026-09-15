@@ -163,6 +163,23 @@ class TemplateIndex {
   getTemplate(name) {
     return this.getTemplateMap().get(name);
   }
+
+  // Every file currently contributing to the index, as Uris — used by the
+  // reference provider to search for usages across the whole workspace.
+  getIndexedUris() {
+    return [...this.filesTemplates.keys()].map((s) => vscode.Uri.parse(s));
+  }
+
+  // The current text for a file: an open document's live (possibly
+  // unsaved) buffer if it's open, otherwise a fresh read from disk.
+  async readCurrentText(uri) {
+    const open = vscode.workspace.textDocuments.find((d) => d.uri.toString() === uri.toString());
+    if (open) {
+      return open.getText();
+    }
+    const bytes = await vscode.workspace.fs.readFile(uri);
+    return Buffer.from(bytes).toString('utf8');
+  }
 }
 
 module.exports = { TemplateIndex };

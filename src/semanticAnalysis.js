@@ -10,7 +10,7 @@ function isVariable(value) {
 }
 
 // Walks the whole document, returning:
-//   - templateUsages: [{line, col, length}] for head-symbol occurrences of a
+//   - templateUsages: [{line, col, length, name}] for head-symbol occurrences of a
 //     known template name used as a pattern (e.g. "(person ..." in a rule's
 //     LHS, deffacts, assert, etc.) — excludes the deftemplate's own name.
 //   - slotUsages: [{line, col, length}] for slot-name occurrences that match
@@ -90,7 +90,7 @@ function analyze(text, templateMap) {
 
     if (headValue && templateMap.has(headValue)) {
       const headToken = node.children[0].token;
-      templateUsages.push({ line: headToken.line, col: headToken.col, length: headValue.length });
+      templateUsages.push({ line: headToken.line, col: headToken.col, length: headValue.length, name: headValue });
       checkSlots(node, templateMap.get(headValue));
     }
 

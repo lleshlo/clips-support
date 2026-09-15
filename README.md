@@ -22,7 +22,7 @@ Syntax highlighting, linting, built-in function documentation, and cross-file te
 - Completion for template names, and — once you're inside a known template's pattern — its slot names, inserted as ready-to-fill snippets.
 - A template usage and its slots are colored distinctly once they resolve against a real definition, so you can tell a genuine reference from an arbitrary symbol at a glance.
 - A slot name or value that doesn't match the template's actual definition is flagged live as you type, even when the template is defined in a different file.
-- Ctrl/Cmd-click (or F12, "Go to Definition") on a template usage jumps straight to its definition, even in another file.
+- Ctrl/Cmd-click (or F12, "Go to Definition") on a template usage jumps straight to its definition, even in another file. Ctrl/Cmd-click on the definition itself instead finds every usage across the workspace (Shift+F12, "Find All References," works from either).
 
 ### Linting
 
