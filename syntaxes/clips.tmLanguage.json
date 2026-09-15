@@ -96,24 +96,44 @@
     "keywords": {
       "patterns": [
         {
-          "name": "keyword.other.fact-function.clips",
-          "match": "(?<=\\()\\s*(assert|retract|modify|modify-instance|duplicate|duplicate-instance|make-instance|unmake-instance|send)(?=[\\s)])"
+          "name": "support.function.fact.clips",
+          "match": "(?<=\\()\\s*(active-message-duplicate-instance|active-message-modify-instance|delayed-do-for-all-instances|active-initialize-instance|message-duplicate-instance|active-duplicate-instance|delayed-do-for-all-facts|instance-name-to-symbol|message-modify-instance|symbol-to-instance-name|active-modify-instance|get-definstances-list|active-make-instance|do-for-all-instances|get-fact-duplication|set-fact-duplication|definstances-module|initialize-instance|duplicate-instance|find-all-instances|get-deffacts-list|list-definstances|restore-instances|do-for-all-facts|bload-instances|bsave-instances|deffacts-module|delete-instance|do-for-instance|fact-slot-names|fact-slot-value|instance-existp|modify-instance|unmake-instance|find-all-facts|load-instances|ppdefinstances|save-instances|undefinstances|any-instancep|fact-relation|find-instance|get-fact-list|list-deffacts|make-instance|bload-facts|do-for-fact|fact-existp|fact-index|load-facts|ppdeffacts|ppinstance|save-facts|str-assert|undeffacts|any-factp|duplicate|find-fact|instances|retract|assert|modify|facts|send)(?=[\\s)])"
         },
         {
           "name": "keyword.control.conditional.clips",
-          "match": "(?<=\\()\\s*(if|then|else|elif|while|do|loop-for-count|switch|case|default)(?=[\\s)])"
+          "match": "(?<=\\()\\s*(object-pattern-match-delay|loop-for-count|default|foreach|progn\\$|return|switch|break|progn|while|bind|case|halt|if)(?=[\\s)])"
         },
         {
-          "name": "keyword.other.io.clips",
-          "match": "(?<=\\()\\s*(printout|format|read|readline|open|close|flush|remove|rename)(?=[\\s)])"
+          "name": "support.function.io.clips",
+          "match": "(?<=\\()\\s*(unget-char|get-char|printout|readline|println|format|remove|rename|close|flush|print|open|read)(?=[\\s)])"
         },
         {
-          "name": "keyword.other.function.clips",
-          "match": "(?<=\\()\\s*(bind|progn|return|break|create\\$|length\\$|nth\\$|delete\\$|delete-member\\$|insert\\$|replace\\$|explode\\$|implode\\$|subseq\\$|first\\$|rest\\$|member\\$|subsetp|str-cat|str-compare|str-index|str-length|sub-string|upcase|lowcase|sym-cat|gensym\\*|integer|float|string|symbol|instance-name|instance-address|instance-addressp|instance-namep|integerp|floatp|numberp|stringp|symbolp|lexemep|multifieldp|evenp|oddp)(?=[\\s)])"
+          "name": "support.function.misc.clips",
+          "match": "(?<=\\()\\s*(get-sequence-operator-recognition|set-sequence-operator-recognition|get-dynamic-constraint-checking|set-dynamic-constraint-checking|get-defmessage-handler-list|get-function-restrictions|list-defmessage-handlers|get-method-restrictions|get-salience-evaluation|set-salience-evaluation|message-handler-existp|override-next-handler|call-specific-method|get-deffunction-list|get-deftemplate-list|override-next-method|ppdefmessage-handler|slot-direct-replace\\$|undefmessage-handler|get-defgeneric-list|slot-allowed-values|slot-direct-accessp|slot-direct-delete\\$|slot-direct-insert\\$|class-superclasses|deffunction-module|deftemplate-module|get-current-module|get-defglobal-list|get-defmethod-list|get-defmodule-list|set-current-module|call-next-handler|clear-focus-stack|defgeneric-module|get-defclass-list|get-reset-globals|list-deffunctions|list-deftemplates|set-reset-globals|call-next-method|class-subclasses|defglobal-module|get-defrule-list|instance-address|list-defgenerics|list-focus-stack|list-watch-items|operating-system|slot-cardinality|class-abstractp|class-reactivep|constructs-to-c|defclass-module|get-focus-stack|list-defclasses|list-defglobals|list-defmethods|list-defmodules|preview-generic|primitives-info|rule-complexity|show-defglobals|browse-classes|defrule-module|describe-class|refresh-agenda|slot-initablep|slot-writablep|instance-name|list-defrules|ppdeffunction|ppdeftemplate|slot-replace\\$|undeffunction|undeftemplate|class-existp|conserve-mem|dependencies|get-strategy|mem-requests|ppdefgeneric|preview-send|print-region|remove-break|slot-delete\\$|slot-insert\\$|slot-publicp|slot-sources|undefgeneric|class-slots|clear-error|dribble-off|dynamic-get|dynamic-put|ppdefglobal|ppdefmethod|ppdefmodule|release-mem|show-breaks|slot-existp|slot-facets|superclassp|undefglobal|undefmethod|dependents|dribble-on|init-slots|local-time|ppdefclass|show-joins|slot-range|slot-types|undefclass|get-error|get-focus|pop-focus|ppdefrule|set-break|set-error|subclassp|undefrule|mem-used|show-fht|show-fpn|show-opn|apropos|gensym\\*|gm-time|matches|options|refresh|unwatch|agenda|batch\\*|random|rewind|setgen|system|batch|bload|bsave|build|chdir|class|clear|fetch|focus|load\\*|reset|rules|watch|edit|eval|exit|load|save|seed|seek|tell|time|toss|type|void|get|put|run)(?=[\\s)])"
         },
         {
           "name": "keyword.operator.logical.clips",
-          "match": "(?<=\\()\\s*(and|or|not|test|exists|forall|logical)(?=[\\s)])"
+          "match": "(?<=\\()\\s*(logical|exists|forall|test|and|not|or)(?=[\\s)])"
+        },
+        {
+          "name": "support.function.predicate.clips",
+          "match": "(?<=\\()\\s*(external-addressp|instance-addressp|instance-namep|next-handlerp|next-methodp|multifieldp|instancep|integerp|pointerp|lexemep|numberp|stringp|symbolp|floatp|evenp|oddp)(?=[\\s)])"
+        },
+        {
+          "name": "support.function.string.clips",
+          "match": "(?<=\\()\\s*(string-to-field|assert-string|str-compare|str-length|sub-string|str-index|lowcase|str-cat|sym-cat|upcase)(?=[\\s)])"
+        },
+        {
+          "name": "support.function.multifield.clips",
+          "match": "(?<=\\()\\s*(replace-member\\$|delete-member\\$|intersection\\$|difference\\$|explode\\$|implode\\$|replace\\$|create\\$|delete\\$|expand\\$|insert\\$|length\\$|member\\$|subseq\\$|subsetp|first\\$|union\\$|rest\\$|nth\\$|sort)(?=[\\s)])"
+        },
+        {
+          "name": "keyword.operator.arithmetic.clips",
+          "match": "(?<=\\()\\s*(deg-grad|grad-deg|deg-rad|integer|rad-deg|acosh|acoth|acsch|asech|asinh|atan2|atanh|float|log10|round|acos|acot|acsc|asec|asin|atan|cosh|coth|csch|sech|sinh|sqrt|tanh|abs|cos|cot|csc|div|exp|log|max|min|mod|sec|sin|tan|\\*\\*|pi|-|\\*|/|\\+)(?=[\\s)])"
+        },
+        {
+          "name": "keyword.operator.comparison.clips",
+          "match": "(?<=\\()\\s*(neq|<=|<>|>=|eq|<|=|>)(?=[\\s)])"
         }
       ]
     },

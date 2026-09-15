@@ -1,6 +1,14 @@
 const vscode = require('vscode');
 const { templateMarkdown } = require('./templateDocs');
 const { WORD_PATTERN } = require('./clipsWords');
+const { getBuiltin } = require('./builtins');
+
+function builtinMarkdown(builtin) {
+  const md = new vscode.MarkdownString();
+  md.appendCodeblock(builtin.syntax, 'clips');
+  md.appendMarkdown(builtin.description);
+  return md;
+}
 
 function registerHoverProvider(context, index) {
   const provider = {
@@ -12,11 +20,19 @@ function registerHoverProvider(context, index) {
       if (!range) {
         return undefined;
       }
-      const template = index.getTemplate(document.getText(range));
-      if (!template) {
-        return undefined;
+      const word = document.getText(range);
+
+      const template = index.getTemplate(word);
+      if (template) {
+        return new vscode.Hover(templateMarkdown(template), range);
       }
-      return new vscode.Hover(templateMarkdown(template), range);
+
+      const builtin = getBuiltin(word);
+      if (builtin) {
+        return new vscode.Hover(builtinMarkdown(builtin), range);
+      }
+
+      return undefined;
     }
   };
 

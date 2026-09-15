@@ -2,9 +2,12 @@
 
 Syntax highlighting and basic linting for [CLIPS](https://www.clipsrules.net/), NASA's rule-based expert system language, in Visual Studio Code.
 
+The authoritative language reference this extension is built against is [`bpg642.pdf`](./bpg642.pdf) (CLIPS Reference Manual, Volume I: Basic Programming Guide, version 6.4.2), kept in the repository root — see [Reference documentation](#reference-documentation) below.
+
 ## Features
 
-- **Syntax highlighting** for `.clp` and `.clips` files: constructs (`defrule`, `deftemplate`, `deffacts`, `deffunction`, `defglobal`, `defclass`, `defmodule`, etc.) plus their names (rule names, template names, function names), variables (`?x`, `$?x`, `?*global*`), strings, numbers, comments (`;` and `/* */`), slot keywords, symbols, and common built-in functions.
+- **Syntax highlighting** for `.clp` and `.clips` files: constructs (`defrule`, `deftemplate`, `deffacts`, `deffunction`, `defglobal`, `defclass`, `defmodule`, etc.) plus their names (rule names, template names, function names), variables (`?x`, `$?x`, `?*global*`), strings, numbers, comments (`;` and `/* */`), slot keywords, and bare symbols.
+- **Built-in/reserved function highlighting and hover docs**: all 366 reserved function names listed in `bpg642.pdf`'s Appendix H (plus a handful Appendix H itself omits but Section 12 documents, like `test`/`exists`/`forall`/`sort`/`case`/`default`) — arithmetic, comparison, logical/pattern, predicate/type-check, string, multifield, I/O, flow-control, fact/instance manipulation, COOL (object-system) introspection, and environment/debugging commands — are each given their own highlight scope and a concise hover description with syntax, sourced from `src/builtins.js` (see that file's header for how it was compiled and its few best-effort exceptions). Both the grammar and the hover docs are generated from this single data file (`node scripts/generate-grammar-keywords.js` regenerates the grammar after an edit), so they can't drift out of sync.
 - **Semantic highlighting for resolved template usages**: a symbol used as a fact/pattern head (e.g. `person` in `(person (name ?n))`) is colored distinctly once it resolves against a known `deftemplate` — including one defined in a different file — so you can visually tell a real template reference from an arbitrary symbol.
 - **Basic linting**, updated live as you type:
   - Unmatched/unbalanced parentheses
@@ -48,6 +51,10 @@ This extension is not yet published to the Marketplace. Install it manually:
 2. Press `F5` (or use the "Run Extension" launch config) to open a new Extension Development Host window with the extension loaded.
 3. Open a file from `test-fixtures/` (e.g. `sample.clp` or `broken.clp`) to see highlighting and diagnostics in action.
 
+## Reference documentation
+
+[`bpg642.pdf`](./bpg642.pdf) — the CLIPS Reference Manual, Volume I: Basic Programming Guide, version 6.4.2 — is kept in the repository root as the authoritative source for `src/builtins.js`'s function names, syntax, and behavior (Section 12, "Actions and Functions") and for confirming completeness against Appendix H, "Reserved Function Names". If you're extending or correcting `src/builtins.js`, this is the file to check against; see that file's own header comment for the handful of names it documents from elsewhere (Volume II, the Advanced Programming Guide, isn't included in this repo).
+
 ## Project structure
 
 - `syntaxes/clips.tmLanguage.json` — TextMate grammar for syntax highlighting.
@@ -62,6 +69,9 @@ This extension is not yet published to the Marketplace. Install it manually:
 - `src/semanticAnalysis.js` — walks a document's s-expression tree to find resolved template usages and check slot values against `allowed-symbols`; no vscode dependency.
 - `src/completion.js` / `src/hover.js` / `src/definition.js` / `src/semanticTokens.js` — the IntelliSense providers built on top of the index and `semanticAnalysis.js`.
 - `src/templateLint.js` — turns `semanticAnalysis.js`'s `allowed-symbols` violations into diagnostics.
+- `src/builtins.js` — the single source of truth for built-in CLIPS functions (name, category, syntax, description); no vscode dependency.
+- `scripts/generate-grammar-keywords.js` — regenerates the grammar's "keywords" section from `src/builtins.js`; run manually after editing that file.
+- `bpg642.pdf` — the CLIPS 6.4.2 Basic Programming Guide; the reference source for `src/builtins.js` (excluded from the packaged `.vsix`, see `.vscodeignore`).
 - `test-fixtures/` — sample `.clp` files used for manual testing.
 
 ## CI/CD
@@ -83,10 +93,10 @@ Two GitHub Actions workflows handle packaging and releases:
 
 - Richer semantic linting (undefined templates/facts referenced in rules, duplicate rule names, `allowed-values`/`allowed-strings`/`allowed-numbers` checks beyond just `allowed-symbols`, deftemplate slot validation).
 - Slot completion that excludes slots already present in the current pattern instance.
-- Code completion for CLIPS keywords and built-in functions.
-- Hover documentation for built-in functions.
+- Code completion for built-in functions (currently: highlighting + hover, but not completion).
 - Go-to-definition for `deffunction`s and rule cross-references (currently templates only).
 - `defrule`/`deftemplate`/`deffunction` name highlighting requires the name to be on the same line as the keyword (standard CLIPS style); a name on its own line falls back to generic symbol coloring.
+- `src/builtins.js` covers all 366 names in `bpg642.pdf`'s Appendix H (plus a handful that appendix omits but Section 12 documents). A small number of appendix entries — `show-fht`, `show-fpn`, `show-joins`, `show-opn`, `primitives-info`, `rule-complexity`, `str-assert` — aren't documented in `bpg642.pdf` itself (they belong to Volume II, the Advanced Programming Guide, which isn't in this repo); their descriptions are best-effort based on naming convention and cross-references within `bpg642.pdf`, not a direct manual quote. If you spot an inaccuracy anywhere, `src/builtins.js` is the single place to fix it — then re-run `node scripts/generate-grammar-keywords.js`.
 
 ## License
 

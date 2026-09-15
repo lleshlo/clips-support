@@ -1,5 +1,7 @@
 .vscode/**
 test-fixtures/**
+scripts/**
 .git/**
 .gitignore
 *.vsix
+bpg642.pdf
