@@ -11,8 +11,9 @@
     { "include": "#globals" },
     { "include": "#multifield-variables" },
     { "include": "#variables" },
-    { "include": "#keywords" },
     { "include": "#slot-keywords" },
+    { "include": "#rule-keywords" },
+    { "include": "#keywords" },
     { "include": "#constants" },
     { "include": "#operators" },
     { "include": "#symbols" }
@@ -52,7 +53,7 @@
           "match": "(\\()\\s*(defrule)\\s+([^\\s()]+)",
           "captures": {
             "1": { "name": "punctuation.section.parens.begin.clips" },
-            "2": { "name": "keyword.control.construct.clips" },
+            "2": { "name": "storage.type.function.clips" },
             "3": { "name": "entity.name.function.rule.clips" }
           }
         },
@@ -60,7 +61,7 @@
           "match": "(\\()\\s*(deftemplate)\\s+([^\\s()]+)",
           "captures": {
             "1": { "name": "punctuation.section.parens.begin.clips" },
-            "2": { "name": "keyword.control.construct.clips" },
+            "2": { "name": "storage.type.class.clips" },
             "3": { "name": "entity.name.type.template.clips" }
           }
         },
@@ -68,12 +69,26 @@
           "match": "(\\()\\s*(deffunction)\\s+([^\\s()]+)",
           "captures": {
             "1": { "name": "punctuation.section.parens.begin.clips" },
-            "2": { "name": "keyword.control.construct.clips" },
+            "2": { "name": "storage.type.function.clips" },
             "3": { "name": "entity.name.function.clips" }
           }
         },
         {
-          "match": "(\\()\\s*(deffacts|defglobal|defclass|definstances|defmessage-handler|defmodule|defgeneric|defmethod)\\b",
+          "match": "(\\()\\s*(defclass)\\b",
+          "captures": {
+            "1": { "name": "punctuation.section.parens.begin.clips" },
+            "2": { "name": "storage.type.class.clips" }
+          }
+        },
+        {
+          "match": "(\\()\\s*(defgeneric|defmethod|defmessage-handler)\\b",
+          "captures": {
+            "1": { "name": "punctuation.section.parens.begin.clips" },
+            "2": { "name": "storage.type.function.clips" }
+          }
+        },
+        {
+          "match": "(\\()\\s*(deffacts|defglobal|definstances|defmodule)\\b",
           "captures": {
             "1": { "name": "punctuation.section.parens.begin.clips" },
             "2": { "name": "keyword.control.construct.clips" }
@@ -82,7 +97,7 @@
       ]
     },
     "globals": {
-      "name": "variable.other.global.clips",
+      "name": "variable.other.constant.global.clips",
       "match": "\\?\\*[A-Za-z0-9_+\\-*/.<>=]+\\*"
     },
     "multifield-variables": {
@@ -112,7 +127,7 @@
           "match": "(?<=\\()\\s*(get-sequence-operator-recognition|set-sequence-operator-recognition|get-dynamic-constraint-checking|set-dynamic-constraint-checking|get-defmessage-handler-list|get-function-restrictions|list-defmessage-handlers|get-method-restrictions|get-salience-evaluation|set-salience-evaluation|message-handler-existp|override-next-handler|call-specific-method|get-deffunction-list|get-deftemplate-list|override-next-method|ppdefmessage-handler|slot-direct-replace\\$|undefmessage-handler|get-defgeneric-list|slot-allowed-values|slot-direct-accessp|slot-direct-delete\\$|slot-direct-insert\\$|class-superclasses|deffunction-module|deftemplate-module|get-current-module|get-defglobal-list|get-defmethod-list|get-defmodule-list|set-current-module|call-next-handler|clear-focus-stack|defgeneric-module|get-defclass-list|get-reset-globals|list-deffunctions|list-deftemplates|set-reset-globals|call-next-method|class-subclasses|defglobal-module|get-defrule-list|instance-address|list-defgenerics|list-focus-stack|list-watch-items|operating-system|slot-cardinality|class-abstractp|class-reactivep|constructs-to-c|defclass-module|get-focus-stack|list-defclasses|list-defglobals|list-defmethods|list-defmodules|preview-generic|primitives-info|rule-complexity|show-defglobals|browse-classes|defrule-module|describe-class|refresh-agenda|slot-initablep|slot-writablep|instance-name|list-defrules|ppdeffunction|ppdeftemplate|slot-replace\\$|undeffunction|undeftemplate|class-existp|conserve-mem|dependencies|get-strategy|mem-requests|ppdefgeneric|preview-send|print-region|remove-break|slot-delete\\$|slot-insert\\$|slot-publicp|slot-sources|undefgeneric|class-slots|clear-error|dribble-off|dynamic-get|dynamic-put|ppdefglobal|ppdefmethod|ppdefmodule|release-mem|show-breaks|slot-existp|slot-facets|superclassp|undefglobal|undefmethod|dependents|dribble-on|init-slots|local-time|ppdefclass|show-joins|slot-range|slot-types|undefclass|get-error|get-focus|pop-focus|ppdefrule|set-break|set-error|subclassp|undefrule|mem-used|show-fht|show-fpn|show-opn|apropos|gensym\\*|gm-time|matches|options|refresh|unwatch|agenda|batch\\*|random|rewind|setgen|system|batch|bload|bsave|build|chdir|class|clear|fetch|focus|load\\*|reset|rules|watch|edit|eval|exit|load|save|seed|seek|tell|time|toss|type|void|get|put|run)(?=[\\s)])"
         },
         {
-          "name": "keyword.operator.logical.clips",
+          "name": "support.function.logical.clips",
           "match": "(?<=\\()\\s*(logical|exists|forall|test|and|not|or)(?=[\\s)])"
         },
         {
@@ -128,18 +143,30 @@
           "match": "(?<=\\()\\s*(replace-member\\$|delete-member\\$|intersection\\$|difference\\$|explode\\$|implode\\$|replace\\$|create\\$|delete\\$|expand\\$|insert\\$|length\\$|member\\$|subseq\\$|subsetp|first\\$|union\\$|rest\\$|nth\\$|sort)(?=[\\s)])"
         },
         {
+          "name": "support.function.arithmetic.clips",
+          "match": "(?<=\\()\\s*(deg-grad|grad-deg|deg-rad|integer|rad-deg|acosh|acoth|acsch|asech|asinh|atan2|atanh|float|log10|round|acos|acot|acsc|asec|asin|atan|cosh|coth|csch|sech|sinh|sqrt|tanh|abs|cos|cot|csc|div|exp|log|max|min|mod|sec|sin|tan|pi)(?=[\\s)])"
+        },
+        {
           "name": "keyword.operator.arithmetic.clips",
-          "match": "(?<=\\()\\s*(deg-grad|grad-deg|deg-rad|integer|rad-deg|acosh|acoth|acsch|asech|asinh|atan2|atanh|float|log10|round|acos|acot|acsc|asec|asin|atan|cosh|coth|csch|sech|sinh|sqrt|tanh|abs|cos|cot|csc|div|exp|log|max|min|mod|sec|sin|tan|\\*\\*|pi|-|\\*|/|\\+)(?=[\\s)])"
+          "match": "(?<=\\()\\s*(\\*\\*|-|\\*|/|\\+)(?=[\\s)])"
+        },
+        {
+          "name": "support.function.comparison.clips",
+          "match": "(?<=\\()\\s*(neq|eq)(?=[\\s)])"
         },
         {
           "name": "keyword.operator.comparison.clips",
-          "match": "(?<=\\()\\s*(neq|<=|<>|>=|eq|<|=|>)(?=[\\s)])"
+          "match": "(?<=\\()\\s*(<=|<>|>=|<|=|>)(?=[\\s)])"
         }
       ]
     },
     "slot-keywords": {
       "name": "storage.modifier.slot.clips",
-      "match": "\\b(slot|multislot|single-slot|default|default-dynamic|type|allowed-symbols|allowed-strings|allowed-numbers|allowed-integers|allowed-floats|allowed-values|allowed-instance-names|allowed-classes|cardinality|pattern-match|range|storage|access|source|propagation|visibility|create-accessor|override-message|is-a|role|declare|salience|node-index-hash|auto-focus)\\b"
+      "match": "\\b(slot|multislot|single-slot|default|default-dynamic|type|allowed-symbols|allowed-strings|allowed-numbers|allowed-integers|allowed-floats|allowed-values|allowed-instance-names|allowed-classes|cardinality|pattern-match|range|storage|access|source|propagation|visibility|create-accessor|override-message|is-a|role|node-index-hash)\\b"
+    },
+    "rule-keywords": {
+      "name": "storage.modifier.rule.clips",
+      "match": "\\b(declare|salience|auto-focus)\\b"
     },
     "constants": {
       "name": "constant.language.clips",
@@ -162,7 +189,7 @@
       ]
     },
     "symbols": {
-      "name": "constant.other.symbol.clips",
+      "name": "variable.other.constant.clips",
       "match": "[^\\s();\"?$]+"
     }
   }

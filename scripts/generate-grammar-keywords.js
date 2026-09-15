@@ -16,10 +16,19 @@ const { BUILTINS, CATEGORIES } = require('../src/builtins');
 
 const GRAMMAR_PATH = path.join(__dirname, '..', 'syntaxes', 'clips.tmLanguage.json');
 
+// Most themes (including VS Code's own defaults) leave "keyword.operator"
+// unstyled — it's conventionally treated as punctuation-like (+, -, <, =),
+// not a highlighted keyword. "support.function" and "keyword.control" are
+// the scopes themes reliably color. So: word-shaped names (anything
+// starting with a letter — eq, not, sqrt, ...) always get a "support.
+// function"/"keyword.control" scope; only genuinely symbolic operators
+// (+, -, <=, <>, ...) keep "keyword.operator", matching how such symbols
+// are conventionally (and usually intentionally) left unstyled in other
+// languages' grammars too.
 const SCOPE_BY_CATEGORY = {
   [CATEGORIES.ARITHMETIC]: 'keyword.operator.arithmetic.clips',
   [CATEGORIES.COMPARISON]: 'keyword.operator.comparison.clips',
-  [CATEGORIES.LOGICAL]: 'keyword.operator.logical.clips',
+  [CATEGORIES.LOGICAL]: 'support.function.logical.clips',
   [CATEGORIES.PREDICATE]: 'support.function.predicate.clips',
   [CATEGORIES.STRING]: 'support.function.string.clips',
   [CATEGORIES.MULTIFIELD]: 'support.function.multifield.clips',
@@ -28,6 +37,18 @@ const SCOPE_BY_CATEGORY = {
   [CATEGORIES.FACT]: 'support.function.fact.clips',
   [CATEGORIES.MISC]: 'support.function.misc.clips'
 };
+
+// Categories containing a mix of symbolic operators (+, <=, ...) and
+// word-shaped functions (mod, eq, ...) get split into two grammar
+// patterns so the word-shaped ones still reliably get colored.
+const WORD_SCOPE_OVERRIDE = {
+  [CATEGORIES.ARITHMETIC]: 'support.function.arithmetic.clips',
+  [CATEGORIES.COMPARISON]: 'support.function.comparison.clips'
+};
+
+function isWordShaped(name) {
+  return /^[A-Za-z]/.test(name);
+}
 
 // Fixed category order so regeneration is deterministic and diffs stay small.
 const CATEGORY_ORDER = [
@@ -61,17 +82,39 @@ function buildPatterns() {
     throw new Error(`CATEGORY_ORDER is missing: ${missingOrder.join(', ')}`);
   }
 
-  return CATEGORY_ORDER.filter((category) => byCategory.has(category)).map((category) => {
+  function toPattern(scope, names) {
+    // Longest names first so a prefix (e.g. "<") never shadows a longer
+    // alternative (e.g. "<=") earlier in the alternation.
+    const sorted = names.slice().sort((a, b) => b.length - a.length);
+    const alternation = sorted.map(escapeForAlternation).join('|');
+    return { name: scope, match: `(?<=\\()\\s*(${alternation})(?=[\\s)])` };
+  }
+
+  const patterns = [];
+  for (const category of CATEGORY_ORDER) {
+    if (!byCategory.has(category)) {
+      continue;
+    }
     const scope = SCOPE_BY_CATEGORY[category];
     if (!scope) {
       throw new Error(`No grammar scope configured for category "${category}"`);
     }
-    // Longest names first so a prefix (e.g. "<") never shadows a longer
-    // alternative (e.g. "<=") earlier in the alternation.
-    const sorted = byCategory.get(category).slice().sort((a, b) => b.length - a.length);
-    const alternation = sorted.map(escapeForAlternation).join('|');
-    return { name: scope, match: `(?<=\\()\\s*(${alternation})(?=[\\s)])` };
-  });
+    const names = byCategory.get(category);
+    const wordScope = WORD_SCOPE_OVERRIDE[category];
+    if (!wordScope) {
+      patterns.push(toPattern(scope, names));
+      continue;
+    }
+    const words = names.filter(isWordShaped);
+    const symbols = names.filter((n) => !isWordShaped(n));
+    if (words.length > 0) {
+      patterns.push(toPattern(wordScope, words));
+    }
+    if (symbols.length > 0) {
+      patterns.push(toPattern(scope, symbols));
+    }
+  }
+  return patterns;
 }
 
 function renderKeywordsBlock(patterns) {

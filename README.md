@@ -6,15 +6,20 @@ The authoritative language reference this extension is built against is [`bpg642
 
 ## Features
 
-- **Syntax highlighting** for `.clp` and `.clips` files: constructs (`defrule`, `deftemplate`, `deffacts`, `deffunction`, `defglobal`, `defclass`, `defmodule`, etc.) plus their names (rule names, template names, function names), variables (`?x`, `$?x`, `?*global*`), strings, numbers, comments (`;` and `/* */`), slot keywords, and bare symbols.
-- **Built-in/reserved function highlighting and hover docs**: all 366 reserved function names listed in `bpg642.pdf`'s Appendix H (plus a handful Appendix H itself omits but Section 12 documents, like `test`/`exists`/`forall`/`sort`/`case`/`default`) — arithmetic, comparison, logical/pattern, predicate/type-check, string, multifield, I/O, flow-control, fact/instance manipulation, COOL (object-system) introspection, and environment/debugging commands — are each given their own highlight scope and a concise hover description with syntax, sourced from `src/builtins.js` (see that file's header for how it was compiled and its few best-effort exceptions). Both the grammar and the hover docs are generated from this single data file (`node scripts/generate-grammar-keywords.js` regenerates the grammar after an edit), so they can't drift out of sync.
-- **Semantic highlighting for resolved template usages**: a symbol used as a fact/pattern head (e.g. `person` in `(person (name ?n))`) is colored distinctly once it resolves against a known `deftemplate` — including one defined in a different file — so you can visually tell a real template reference from an arbitrary symbol.
+- **Syntax highlighting** for `.clp` and `.clips` files, using scopes chosen to match how mainstream languages (Python in particular) are conventionally colored, so a CLIPS file looks consistent with the rest of your theme rather than using arbitrary CLIPS-only scopes:
+  - Constructs that define a callable (`defrule`, `deffunction`, `defgeneric`, `defmethod`, `defmessage-handler`) get `storage.type.function`, matching Python's `def`; constructs that define a type/structure (`deftemplate`, `defclass`) get `storage.type.class`, matching Python's `class`.
+  - Bare symbols (CLIPS's atom/constant values) and globals (`?*name*`) get `variable.other.constant`, the same scope most themes use for Python's `ALL_CAPS` constants — so they land on whatever color your theme already uses for "constant-like" identifiers.
+  - Slot-definition facets (`type`, `default`, `allowed-symbols`, `cardinality`, `is-a`, etc.) and rule/handler-execution facets (`declare`, `salience`, `auto-focus`) get distinct `storage.modifier.*` scopes — they configure different things (a template's data shape vs. a rule's runtime behavior) so they're no longer lumped together.
+  - Variables (`?x`, `$?x`), strings, numbers, comments (`;` and `/* */`), and rule/template/function names each get their own scope too.
+- **Built-in/reserved function highlighting and hover docs**: all 366 reserved function names listed in `bpg642.pdf`'s Appendix H (plus a handful Appendix H itself omits but Section 12 documents, like `test`/`exists`/`forall`/`sort`/`case`/`default`) — arithmetic, comparison, logical/pattern, predicate/type-check, string, multifield, I/O, flow-control, fact/instance manipulation, COOL (object-system) introspection, and environment/debugging commands — are each given their own highlight scope and a concise hover description with syntax, sourced from `src/builtins.js` (see that file's header for how it was compiled and its few best-effort exceptions). Both the grammar and the hover docs are generated from this single data file (`node scripts/generate-grammar-keywords.js` regenerates the grammar after an edit), so they can't drift out of sync. Word-shaped names (`not`, `sqrt`, `eq`, ...) get `support.function.*`/`keyword.control.*` scopes, which themes reliably color; purely symbolic operators (`+`, `<`, `<=`, ...) keep `keyword.operator.*`, which most themes (including VS Code's own defaults) intentionally leave unstyled, matching the convention in most other languages.
+- **Semantic highlighting for resolved template usages**: a symbol used as a fact/pattern head (e.g. `person` in `(person (name ?n))`) is colored distinctly once it resolves against a known `deftemplate` — including one defined in a different file — so you can visually tell a real template reference from an arbitrary symbol. A slot name used inside that pattern (e.g. `name`) is likewise colored as a variable once it resolves against one of that template's actually-defined slots; an undefined slot name (e.g. using `bad` when `foo` has no such slot) is left uncolored and squiggled instead — see `test-fixtures/broken.clp`.
 - **Basic linting**, updated live as you type:
   - Unmatched/unbalanced parentheses
   - Unterminated string literals
   - Constructs missing a name (e.g. `(deftemplate)` with no name)
   - `defrule` blocks missing the `=>` separator between patterns and actions
   - A symbol value used for a slot with an `allowed-symbols` facet that isn't in that facet's list — resolved across files, so this also catches misuse of a template defined elsewhere (see `test-fixtures/templates.clp` + `test-fixtures/usage.clp`)
+  - A slot name used in a fact/pattern that isn't actually defined on the resolved template (see `test-fixtures/broken.clp`)
 - **Template IntelliSense**: `deftemplate` definitions are indexed across every `.clp`/`.clips` file in the workspace (not just the current file), so:
   - Typing a pattern's head (e.g. `(pe|` inside a rule) offers known template names as completions, with a hover-style preview of their slots.
   - Once inside a known template's pattern (e.g. `(person |`), completion offers that template's slot names, each inserted as a ready-to-fill `(slotname )` snippet.
@@ -66,9 +71,9 @@ This extension is not yet published to the Marketplace. Install it manually:
 - `src/templateParser.js` — extracts `deftemplate` name/slots/facets from source text; no vscode dependency.
 - `src/templateIndex.js` — scans the workspace (and `clips.includePath`) for templates and keeps the index current via file watchers; fires `onDidChange` so other open files can react when a template defined elsewhere changes.
 - `src/patternContext.js` — figures out, from cursor position, whether completion should offer template names or a specific template's slot names.
-- `src/semanticAnalysis.js` — walks a document's s-expression tree to find resolved template usages and check slot values against `allowed-symbols`; no vscode dependency.
-- `src/completion.js` / `src/hover.js` / `src/definition.js` / `src/semanticTokens.js` — the IntelliSense providers built on top of the index and `semanticAnalysis.js`.
-- `src/templateLint.js` — turns `semanticAnalysis.js`'s `allowed-symbols` violations into diagnostics.
+- `src/semanticAnalysis.js` — walks a document's s-expression tree to find resolved template usages, resolved slot usages, unknown slot names, and slot values that violate `allowed-symbols`; no vscode dependency.
+- `src/completion.js` / `src/hover.js` / `src/definition.js` / `src/semanticTokens.js` — the IntelliSense providers built on top of the index and `semanticAnalysis.js`; `semanticTokens.js` colors resolved template usages (`class`) and resolved slot usages (`variable`).
+- `src/templateLint.js` — turns `semanticAnalysis.js`'s unknown-slot and `allowed-symbols` findings into diagnostics.
 - `src/builtins.js` — the single source of truth for built-in CLIPS functions (name, category, syntax, description); no vscode dependency.
 - `scripts/generate-grammar-keywords.js` — regenerates the grammar's "keywords" section from `src/builtins.js`; run manually after editing that file.
 - `bpg642.pdf` — the CLIPS 6.4.2 Basic Programming Guide; the reference source for `src/builtins.js` (excluded from the packaged `.vsix`, see `.vscodeignore`).
@@ -91,12 +96,13 @@ Two GitHub Actions workflows handle packaging and releases:
 
 ## Roadmap (beyond MVP)
 
-- Richer semantic linting (undefined templates/facts referenced in rules, duplicate rule names, `allowed-values`/`allowed-strings`/`allowed-numbers` checks beyond just `allowed-symbols`, deftemplate slot validation).
+- Richer semantic linting (undefined templates/facts referenced in rules, duplicate rule names, `allowed-values`/`allowed-strings`/`allowed-numbers` checks beyond just `allowed-symbols`, multislot cardinality validation).
 - Slot completion that excludes slots already present in the current pattern instance.
 - Code completion for built-in functions (currently: highlighting + hover, but not completion).
 - Go-to-definition for `deffunction`s and rule cross-references (currently templates only).
 - `defrule`/`deftemplate`/`deffunction` name highlighting requires the name to be on the same line as the keyword (standard CLIPS style); a name on its own line falls back to generic symbol coloring.
 - `src/builtins.js` covers all 366 names in `bpg642.pdf`'s Appendix H (plus a handful that appendix omits but Section 12 documents). A small number of appendix entries — `show-fht`, `show-fpn`, `show-joins`, `show-opn`, `primitives-info`, `rule-complexity`, `str-assert` — aren't documented in `bpg642.pdf` itself (they belong to Volume II, the Advanced Programming Guide, which isn't in this repo); their descriptions are best-effort based on naming convention and cross-references within `bpg642.pdf`, not a direct manual quote. If you spot an inaccuracy anywhere, `src/builtins.js` is the single place to fix it — then re-run `node scripts/generate-grammar-keywords.js`.
+- `type` and `default` are each both a slot-definition facet (`(slot x (type STRING))`, `(slot x (default 0))`) and a built-in function name (a type-of function; `switch`'s `default` clause). The grammar can't tell these apart by regex alone, so it always prefers the slot-facet reading (`storage.modifier.slot.clips`) since that usage is far more common in practice — a real `(type ...)`/`(default ...)` function call gets that same coloring rather than the built-in-function one.
 
 ## License
 
