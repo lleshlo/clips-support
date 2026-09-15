@@ -50,7 +50,9 @@ function registerReferenceProvider(context, templateIndex) {
 
       const locations = await findTemplateUsageLocations(word, templateIndex);
       if (refContext.includeDeclaration) {
-        locations.push(new vscode.Location(template.sourceUri, new vscode.Position(template.line, template.col)));
+        const start = new vscode.Position(template.line, template.col);
+        const end = new vscode.Position(template.line, template.col + template.name.length);
+        locations.push(new vscode.Location(template.sourceUri, new vscode.Range(start, end)));
       }
       return locations;
     }
