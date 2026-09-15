@@ -96,24 +96,44 @@
     "keywords": {
       "patterns": [
         {
-          "name": "keyword.other.fact-function.clips",
-          "match": "(?<=\\()\\s*(assert|retract|modify|modify-instance|duplicate|duplicate-instance|make-instance|unmake-instance|send)(?=[\\s)])"
+          "name": "support.function.fact.clips",
+          "match": "(?<=\\()\\s*(duplicate-instance|modify-instance|unmake-instance|make-instance|duplicate|retract|assert|modify|send)(?=[\\s)])"
         },
         {
           "name": "keyword.control.conditional.clips",
-          "match": "(?<=\\()\\s*(if|then|else|elif|while|do|loop-for-count|switch|case|default)(?=[\\s)])"
+          "match": "(?<=\\()\\s*(loop-for-count|default|progn\\$|return|switch|while|progn|break|bind|case|if)(?=[\\s)])"
         },
         {
-          "name": "keyword.other.io.clips",
-          "match": "(?<=\\()\\s*(printout|format|read|readline|open|close|flush|remove|rename)(?=[\\s)])"
+          "name": "support.function.io.clips",
+          "match": "(?<=\\()\\s*(printout|readline|get-char|put-char|format|remove|rename|close|flush|read|open)(?=[\\s)])"
         },
         {
-          "name": "keyword.other.function.clips",
-          "match": "(?<=\\()\\s*(bind|progn|return|break|create\\$|length\\$|nth\\$|delete\\$|delete-member\\$|insert\\$|replace\\$|explode\\$|implode\\$|subseq\\$|first\\$|rest\\$|member\\$|subsetp|str-cat|str-compare|str-index|str-length|sub-string|upcase|lowcase|sym-cat|gensym\\*|integer|float|string|symbol|instance-name|instance-address|instance-addressp|instance-namep|integerp|floatp|numberp|stringp|symbolp|lexemep|multifieldp|evenp|oddp)(?=[\\s)])"
+          "name": "support.function.misc.clips",
+          "match": "(?<=\\()\\s*(gensym\\*|random|build|seed|time|eval)(?=[\\s)])"
         },
         {
           "name": "keyword.operator.logical.clips",
-          "match": "(?<=\\()\\s*(and|or|not|test|exists|forall|logical)(?=[\\s)])"
+          "match": "(?<=\\()\\s*(logical|exists|forall|test|and|not|or)(?=[\\s)])"
+        },
+        {
+          "name": "support.function.predicate.clips",
+          "match": "(?<=\\()\\s*(instance-addressp|instance-namep|multifieldp|instancep|integerp|pointerp|numberp|stringp|symbolp|lexemep|floatp|factp|evenp|oddp)(?=[\\s)])"
+        },
+        {
+          "name": "support.function.string.clips",
+          "match": "(?<=\\()\\s*(string-to-field|str-compare|str-length|sub-string|str-index|str-cat|sym-cat|lowcase|upcase)(?=[\\s)])"
+        },
+        {
+          "name": "support.function.multifield.clips",
+          "match": "(?<=\\()\\s*(replace-member\\$|delete-member\\$|replace\\$|explode\\$|implode\\$|create\\$|length\\$|subseq\\$|delete\\$|insert\\$|member\\$|subsetp|first\\$|rest\\$|nth\\$|sort)(?=[\\s)])"
+        },
+        {
+          "name": "keyword.operator.arithmetic.clips",
+          "match": "(?<=\\()\\s*(deg-grad|grad-deg|integer|deg-rad|rad-deg|round|float|log10|atan2|asinh|acosh|atanh|sqrt|asin|acos|atan|sinh|cosh|tanh|div|abs|min|max|mod|exp|log|sin|cos|tan|\\*\\*|pi|\\+|-|\\*|/)(?=[\\s)])"
+        },
+        {
+          "name": "keyword.operator.comparison.clips",
+          "match": "(?<=\\()\\s*(neq|<>|>=|<=|eq|=|>|<)(?=[\\s)])"
         }
       ]
     },

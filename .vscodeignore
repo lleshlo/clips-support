@@ -1,5 +1,6 @@
 .vscode/**
 test-fixtures/**
+scripts/**
 .git/**
 .gitignore
 *.vsix
