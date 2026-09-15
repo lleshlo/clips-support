@@ -13,25 +13,43 @@ function isVariable(value) {
 //   - templateUsages: [{line, col, length}] for head-symbol occurrences of a
 //     known template name used as a pattern (e.g. "(person ..." in a rule's
 //     LHS, deffacts, assert, etc.) — excludes the deftemplate's own name.
+//   - slotUsages: [{line, col, length}] for slot-name occurrences that match
+//     a slot actually defined on the pattern's resolved template.
 //   - symbolIssues: [{line, col, length, message}] for slot values that
 //     violate that slot's allowed-symbols facet.
+//   - unknownSlotIssues: [{line, col, length, message}] for slot names used
+//     in a pattern that aren't defined on the resolved template at all.
 function analyze(text, templateMap) {
   const tokens = tokenize(text);
   const tree = parseSExpr(tokens);
   const templateUsages = [];
+  const slotUsages = [];
   const symbolIssues = [];
+  const unknownSlotIssues = [];
 
   function checkSlots(patternNode, template) {
     for (const child of patternNode.children.slice(1)) {
       if (child.type !== 'list' || child.children.length === 0) {
         continue;
       }
-      const slotName = atomSymbolValue(child.children[0]);
+      const slotNameNode = child.children[0];
+      const slotName = atomSymbolValue(slotNameNode);
       if (!slotName) {
         continue;
       }
       const slot = template.slots.find((s) => s.name === slotName);
-      const allowedFacet = slot && slot.facets['allowed-symbols'];
+      if (!slot) {
+        unknownSlotIssues.push({
+          line: slotNameNode.token.line,
+          col: slotNameNode.token.col,
+          length: slotName.length,
+          message: `'${slotName}' is not defined as a slot of template '${template.name}'`
+        });
+        continue;
+      }
+      slotUsages.push({ line: slotNameNode.token.line, col: slotNameNode.token.col, length: slotName.length });
+
+      const allowedFacet = slot.facets['allowed-symbols'];
       if (!allowedFacet) {
         continue;
       }
@@ -87,7 +105,7 @@ function analyze(text, templateMap) {
     walk(node);
   }
 
-  return { templateUsages, symbolIssues };
+  return { templateUsages, slotUsages, symbolIssues, unknownSlotIssues };
 }
 
 module.exports = { analyze };
