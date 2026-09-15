@@ -5,6 +5,7 @@ const { TemplateIndex } = require('./templateIndex');
 const { registerCompletionProvider } = require('./completion');
 const { registerHoverProvider } = require('./hover');
 const { registerDefinitionProvider } = require('./definition');
+const { registerReferenceProvider } = require('./references');
 const { registerSemanticTokensProvider } = require('./semanticTokens');
 
 function activate(context) {
@@ -15,6 +16,7 @@ function activate(context) {
   registerCompletionProvider(context, templateIndex);
   registerHoverProvider(context, templateIndex);
   registerDefinitionProvider(context, templateIndex);
+  registerReferenceProvider(context, templateIndex);
   registerSemanticTokensProvider(context, templateIndex);
 
   const timers = new Map();
