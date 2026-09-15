@@ -5,3 +5,4 @@ scripts/**
 .gitignore
 *.vsix
 bpg642.pdf
+CONTRIBUTING.md
